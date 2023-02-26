@@ -6,7 +6,7 @@ Public Class HomeController
     Public Function Index() As ActionResult
         Dim books As List(Of Book) = Book.GetBooksFromCsv(Server.MapPath("~/Data/book.csv"))
         Return View(books)
-
+        
     End Function
 
 
