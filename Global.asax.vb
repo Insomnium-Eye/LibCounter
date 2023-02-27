@@ -13,6 +13,7 @@ Public Class MvcApplication
 
         ' Read books data from CSV and store it in database
         Dim connectionString As String = "Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=MyLocalDatabase;Integrated Security=True"
+
         Dim books As List(Of Book) = Book.GetBooksFromCsv(Server.MapPath("~/App_Data/books.csv"))
         Using connection As New SqlConnection(connectionString)
             connection.Open()
