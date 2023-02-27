@@ -1,16 +1,15 @@
 ﻿Imports System.IO
-Imports LibCounter
 
 Public Class Book
     Public Property Name As String
     Public Property Author As String
     Public Property UserRating As Double
-    Public Property Reviews As String
+    Public Property Reviews As Integer
     Public Property Price As Double
     Public Property Year As Integer
     Public Property Genre As String
 
-    Public Sub New(name As String, author As String, userRating As Double, reviews As String, price As Double, year As Integer, genre As String)
+    Public Sub New(name As String, author As String, userRating As Double, reviews As Integer, price As Double, year As Integer, genre As String)
         Me.Name = name
         Me.Author = author
         Me.UserRating = userRating
@@ -27,7 +26,7 @@ Public Class Book
                 Dim values As String() = reader.ReadLine().Split(",")
                 Try
                     Dim userRating As Double = Double.Parse(values(2))
-                    Dim reviews As String = values(3)
+                    Dim reviews As Integer = Integer.Parse(values(3))
                     Dim price As Double = Double.Parse(values(4))
                     Dim year As Integer = Integer.Parse(values(5))
                     Dim book As New Book(values(0), values(1), userRating, reviews, price, year, values(6))

@@ -1,5 +1,5 @@
 ﻿Imports System.Web.Optimization
-Imports System.Data.SqlClient
+Imports System.Data.SQLite
 Imports System.IO
 
 Public Class MvcApplication
@@ -12,15 +12,23 @@ Public Class MvcApplication
         BundleConfig.RegisterBundles(BundleTable.Bundles)
 
         ' Read books data from CSV and store it in database
-        Dim connectionString As String = "Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=MyLocalDatabase;Integrated Security=True"
+        Dim connectionString As String = "Data Source=myDatabase.sqlite;Version=3;"
+        Dim dbFilePath As String = Server.MapPath("~/App_Data/myDatabase.sqlite")
 
-        Dim books As List(Of Book) = Book.GetBooksFromCsv(Server.MapPath("~/App_Data/books.csv"))
-        Using connection As New SqlConnection(connectionString)
+        If Not File.Exists(dbFilePath) Then
+            SQLiteConnection.CreateFile(dbFilePath)
+        End If
+
+        Using connection As New SQLiteConnection(connectionString)
             connection.Open()
-            Dim command As New SqlCommand("TRUNCATE TABLE Books", connection)
+            Dim command As New SQLiteCommand("CREATE TABLE IF NOT EXISTS Books (Id INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, Author TEXT, [User Rating] REAL, Reviews INTEGER, Price REAL, Year INTEGER, Genre TEXT)", connection)
+            command.ExecuteNonQuery()
+
+            Dim books As List(Of Book) = Book.GetBooksFromCsv(Server.MapPath("~/App_Data/books.csv"))
+            command = New SQLiteCommand("DELETE FROM Books", connection)
             command.ExecuteNonQuery()
             For Each book As Book In books
-                command = New SqlCommand("INSERT INTO Books (Name, Author, UserRating, Reviews, Price, Year, Genre) VALUES (@Name, @Author, @UserRating, @Reviews, @Price, @Year, @Genre)", connection)
+                command = New SQLiteCommand("INSERT INTO Books (Name, Author, [User Rating], Reviews, Price, Year, Genre) VALUES (@Name, @Author, @UserRating, @Reviews, @Price, @Year, @Genre)", connection)
                 command.Parameters.AddWithValue("@Name", book.Name)
                 command.Parameters.AddWithValue("@Author", book.Author)
                 command.Parameters.AddWithValue("@UserRating", book.UserRating)
@@ -31,6 +39,7 @@ Public Class MvcApplication
                 command.ExecuteNonQuery()
             Next
         End Using
-
     End Sub
 End Class
+
+

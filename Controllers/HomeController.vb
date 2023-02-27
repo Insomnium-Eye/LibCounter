@@ -1,24 +1,20 @@
-﻿
+﻿Imports System.Web.Mvc
+Imports System.IO
+Imports LibCounter
 
 Public Class HomeController
-    Inherits System.Web.Mvc.Controller
+    Inherits Controller
 
     Public Function Index() As ActionResult
-        Dim books As List(Of Book) = Book.GetBooksFromCsv(Server.MapPath("~/Data/book.csv"))
-        Return View(books)
-        
-    End Function
-
-
-    Function About() As ActionResult
-        ViewData("Message") = "Your application description page."
-
         Return View()
     End Function
 
-    Function Contact() As ActionResult
-        ViewData("Message") = "Your contact page."
-
-        Return View()
+    Public Function GetBooks() As JsonResult
+        Dim csvPath As String = Server.MapPath("~/App_Data/books.csv")
+        Dim books As List(Of Book) = Book.GetBooksFromCsv(csvPath)
+        Return Json(books, JsonRequestBehavior.AllowGet)
     End Function
+
 End Class
+
+
