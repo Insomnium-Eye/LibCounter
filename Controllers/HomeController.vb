@@ -1,57 +1,72 @@
-﻿Imports System.Web.Mvc
-Imports System.IO.File
-Imports LibCounter
+﻿Imports LibCounter.Models
+Imports System.Data.Entity
 
 Public Class HomeController
-    Inherits Controller
+    Inherits System.Web.Mvc.Controller
 
-    Public Function Index() As ActionResult
+    Private db As New LibCounterContext()
+
+    Function About() As ActionResult
+        ViewData("Message") = "Your application description page."
+
         Return View()
     End Function
 
-    Public Function GetBooks() As JsonResult
-        Dim csvPath As String = Server.MapPath("~/App_Data/books.csv")
-        Dim lines As String() = System.IO.File.ReadAllLines(csvPath)
+    Function Contact() As ActionResult
+        ViewData("Message") = "Your contact page."
 
-        Dim books As List(Of Book) = New List(Of Book)
-
-        For i As Integer = 1 To lines.Length - 1
-            Dim values As String() = lines(i).Split(","c)
-            Try
-                Dim book As Book = New Book(
-            values(0),
-            values(1),
-            Double.Parse(values(2)),
-            Integer.Parse(values(3)),
-            Double.Parse(values(4)),
-            Integer.Parse(values(5)),
-            values(6)
-        )
-                books.Add(book)
-            Catch ex As Exception
-                Debug.WriteLine($"Error parsing line {i}: {ex.Message}")
-                Debug.WriteLine($"Values: {String.Join(",", values)}")
-            End Try
-        Next
-
-        Return Json(books, JsonRequestBehavior.AllowGet)
+        Return View()
     End Function
 
 
 
-    Public Function SearchBooks(searchTerm As String) As JsonResult
-        Dim csvPath As String = Server.MapPath("~/App_Data/books.csv")
+
+
+    <HttpPost>
+    Function CheckOut(username As String, bookId As Integer) As ActionResult
+        Dim cart As Cart = Session("Cart")
+        If cart Is Nothing Then
+            cart = New Cart()
+        End If
+        Dim book As Book = db.Books.Find(bookId)
+        If book IsNot Nothing Then
+            ViewBag.CheckedOutBook = book.Name
+            TempData("CheckedOutBook") = book.Name
+            cart.Books.Add(book)
+            Session("Cart") = cart
+            ViewBag.CartCount = cart.Books.Count
+            TempData("Username") = username
+        End If
+        Return RedirectToAction("Index")
+    End Function
+
+
+
+    Function Index() As ActionResult
+        Dim csvPath As String = Server.MapPath("~/App_Data/Books.csv")
         Dim books As List(Of Book) = Book.GetBooksFromCsv(csvPath)
-        Dim filteredBooks As List(Of Book) = books.Where(Function(book) book.Name.IndexOf(searchTerm, StringComparison.InvariantCultureIgnoreCase) >= 0).ToList()
-        Return Json(filteredBooks, JsonRequestBehavior.AllowGet)
+        ViewBag.CheckedOutBook = TempData("CheckedOutBook")
+        ViewBag.Username = TempData("Username")
+        Return View(books)
     End Function
 
-    Public Function GetTopRatedBooks() As JsonResult
-        Dim csvPath As String = Server.MapPath("~/App_Data/books.csv")
-        Dim books As List(Of Book) = Book.GetBooksFromCsv(csvPath)
-        Dim topRatedBooks As List(Of Book) = books.OrderByDescending(Function(book) book.UserRating).Take(10).ToList()
-        Return Json(topRatedBooks, JsonRequestBehavior.AllowGet)
+    Function CheckedOutBooks() As ActionResult
+        Dim cart As Cart = Session("Cart")
+        If cart Is Nothing Then
+            cart = New Cart()
+        End If
+        ViewBag.CheckedOutBooks = cart.Books.Select(Function(b) b.Name)
+        Return View()
     End Function
+
+    Function Username() As ActionResult
+        Return View()
+    End Function
+
+    Protected Overrides Sub Dispose(ByVal disposing As Boolean)
+        If (disposing) Then
+            db.Dispose()
+        End If
+        MyBase.Dispose(disposing)
+    End Sub
 End Class
-
-

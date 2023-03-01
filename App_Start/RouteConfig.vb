@@ -10,6 +10,18 @@ Public Module RouteConfig
         routes.IgnoreRoute("{resource}.axd/{*pathInfo}")
 
         routes.MapRoute(
+            name:="EnterUsername",
+            url:="EnterUsername",
+            defaults:=New With {.controller = "Home", .action = "Username"}
+        )
+
+        routes.MapRoute(
+            name:="CheckOut",
+            url:="AddToCart",
+            defaults:=New With {.controller = "Home", .action = "CheckOut"}
+        )
+
+        routes.MapRoute(
             name:="Default",
             url:="{controller}/{action}/{id}",
             defaults:=New With {.controller = "Home", .action = "Index", .id = UrlParameter.Optional}
